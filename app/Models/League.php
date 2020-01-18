@@ -1,0 +1,91 @@
+<?php
+
+namespace App\Models;
+
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
+class League extends Model
+{
+
+    protected $table = 'leagues';
+
+    protected $fillable = [
+        'edition_id',
+        'name',
+        'slug',
+        'rank',
+        'promotions',
+        'demotions'
+    ];
+
+    public function edition()
+    {
+        return $this->belongsTo(ActiveEdition::class);
+    }
+
+    public function phases()
+    {
+        return $this->hasMany(Phase::class);
+    }
+
+    public function players()
+    {
+        return $this->belongsToMany(Player::class, 'league_player');
+    }
+
+    public function matches()
+    {
+        return $this->hasManyThrough(Match::class, Phase::class);
+    }
+
+    public function generatePhases()
+    {
+        $totalPhases = $this->players->count() - 1;
+        $today = Carbon::now();
+        for($i = 1; $i <= $totalPhases; ++$i) {
+            /** @var Phase $phase */
+            $phase = Phase::create([
+                'league_id' => $this->id,
+                'number' => $i,
+                'date' => $today->next(Carbon::MONDAY)->addWeeks($i - 1)
+            ]);
+            $phase->createMatches($this->players);
+        }
+    }
+
+    public function getScoreboardPlayers()
+    {
+        $players = DB::select('SELECT p.id, p.first_name as firstName, p.last_name as lastName,
+                (SELECT COUNT(id) FROM matches WHERE
+                    phase_id IN (SELECT id FROM phases where league_id = l.id) AND
+                    (
+                        (home_player_id = p.id AND home_score > away_score) OR
+                        (away_player_id = p.id AND home_score < away_score)
+                    )
+                    ) as wonMatches,
+                (SELECT COUNT(id) FROM matches WHERE
+                    phase_id IN (SELECT id FROM phases where league_id = l.id) AND
+                    (home_player_id = p.id OR away_player_id = p.id) AND
+                    home_score != away_score
+                    ) as playedMatches,
+                (SELECT SUM(home_score) FROM matches WHERE
+                    phase_id IN (SELECT id FROM phases where league_id = l.id) AND
+                    (home_player_id = p.id)
+                    ) +
+                    (SELECT SUM(away_score) FROM matches WHERE
+                            phase_id IN (SELECT id FROM phases where league_id = l.id) AND
+                        (away_player_id = p.id)
+                    ) as wonSets
+        FROM players p
+                 JOIN league_player lp ON p.id = lp.player_id
+                 JOIN leagues l ON lp.league_id = l.id
+                 JOIN phases ph on l.id = ph.league_id
+        WHERE l.id = ?
+        GROUP BY p.id, p.first_name, p.last_name
+        ORDER BY wonMatches DESC, wonSets DESC, playedMatches DESC', [$this->id]);
+
+        return $players;
+    }
+}
