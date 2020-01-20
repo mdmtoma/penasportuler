@@ -17,6 +17,11 @@ class Match extends Model
         'away_score'
     ];
 
+    public function phase()
+    {
+        return $this->belongsTo(Phase::class);
+    }
+
     public function homePlayer()
     {
         return $this->belongsTo(Player::class, 'home_player_id');

@@ -1,6 +1,7 @@
 <html>
     <head>
         <link href="{{asset('css/bootstrap.min.css')}}" rel="stylesheet"/>
+        <link href="{{asset('css/style.css')}}" rel="stylesheet"/>
     </head>
     <body>
         <header>
@@ -29,5 +30,6 @@
         </div>
         <script src="{{asset('js/jquery.min.js')}}" type="application/javascript"></script>
         <script src="{{asset('js/bootstrap.min.js')}}" type="application/javascript"></script>
+        <script src="{{asset('js/script.js')}}" type="application/javascript"></script>
     </body>
 </html>

@@ -5,6 +5,7 @@
         <div class="col-lg-8 offset-2">
             <h1>Campionatul de tenis de masa Pentalog</h1>
         </div>
+        <div class="divider"></div>
         <div class="col-lg-8 offset-2">
             @foreach($leagues as $key => $league)
                 {{$key ? " | " : ""}}

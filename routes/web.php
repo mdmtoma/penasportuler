@@ -20,3 +20,6 @@ Route::get('/league/{league}/matches', 'LeagueController@matches')
 
 Route::get('/matches/{match}/edit', 'MatchController@edit')
     ->name('matches.edit');
+
+Route::put('/matches/{match}/update', 'MatchController@update')
+    ->name('matches.update');

@@ -25,6 +25,11 @@ class Phase extends Model
         return $this->hasMany(Match::class);
     }
 
+    public function league()
+    {
+        return $this->belongsTo(League::class);
+    }
+
     public function createMatches(Collection $players)
     {
         $totalPlayers = $players->count();

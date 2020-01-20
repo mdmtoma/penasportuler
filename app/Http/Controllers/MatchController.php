@@ -14,8 +14,7 @@ class MatchController extends Controller
 
     public function edit(Match $match)
     {
-        dd($match);
-        return view('match', $match);
+        return view('match', ['match' => $match]);
     }
 
     public function update(Match $match, UpdateMatchRequest $request) {
