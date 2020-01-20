@@ -3,13 +3,13 @@
 @section('content')
     <div class="row">
         <div class="col-lg-8 offset-lg-2">
-            <h1>Fazele pentru {{$league->name}}</h1>
+            <h1>Etapele pentru {{$league->name}}</h1>
         </div>
     </div>
     @foreach($league->phases as $phase)
         <div class="row">
             <div class="col-lg-8 offset-lg-2">
-                <h3>Faza nr. {{$phase->number}} din data: {{$phase->date->format('d.m.Y')}}</h3>
+                <h3>Etapa nr. {{$phase->number}} din data: {{$phase->date->format('d.m.Y')}}</h3>
                 <table class="table table-striped table-bordered text-center">
                     <thead>
                         <tr>
@@ -22,7 +22,11 @@
                     <tbody>
                     @foreach($phase->matches as $match)
                         <tr>
-                            <td>{{$match->id}}</td>
+                            <td>
+                                <a href="{{route('matches.edit', ['match' => $match])}}">
+                                    {{$match->id}}
+                                </a>
+                            </td>
                             <td>{{$match->homePlayer->getFullName()}}</td>
                             <td>{{$match->home_score}}</td>
                             <td>-</td>

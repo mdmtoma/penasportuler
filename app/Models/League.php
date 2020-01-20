@@ -84,8 +84,35 @@ class League extends Model
                  JOIN phases ph on l.id = ph.league_id
         WHERE l.id = ?
         GROUP BY p.id, p.first_name, p.last_name
-        ORDER BY wonMatches DESC, wonSets DESC, playedMatches DESC', [$this->id]);
+        ORDER BY wonMatches DESC, playedMatches DESC', [$this->id]);
 
-        return $players;
+        return $this->orderPlayers($players);
+    }
+
+    public function orderPlayers(array $players)
+    {
+        $orderedPlayers = [];
+        $previousPlayerWonMatches = 0;
+        $toReorder = [];
+        foreach($players as $key => $player) {
+            if($key == 0) {
+                $previousPlayerWonMatches = $player->wonMatches;
+                $toReorder[] = $player;
+            } elseif($player->wonMatches == $previousPlayerWonMatches) {
+                $toReorder[] = $player;
+            } else {
+                $partiallyOrderedPlayers = $this->reorder($toReorder);
+                $toReorder = [$player];
+                foreach($partiallyOrderedPlayers as $orderedPlayer) {
+                    $orderedPlayers[] = $orderedPlayer;
+                }
+            }
+        }
+        return $orderedPlayers;
+    }
+
+    private function reorder(array $toReorder)
+    {
+        return $toReorder;
     }
 }

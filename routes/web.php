@@ -11,11 +11,12 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', 'IndexController@index')->name('home');
 
 Route::get('/league/{league}/scoreboard', 'LeagueController@index')
     ->name('league.scoreboard');
 Route::get('/league/{league}/matches', 'LeagueController@matches')
     ->name('league.matches');
+
+Route::get('/matches/{match}/edit', 'MatchController@edit')
+    ->name('matches.edit');
