@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Match extends Model
 {
 
+    const WINNER_SCORE = 3;
     protected $table = 'matches';
 
     protected $fillable = [

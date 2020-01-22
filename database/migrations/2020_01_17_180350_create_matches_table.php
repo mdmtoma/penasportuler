@@ -21,8 +21,8 @@ class CreateMatchesTable extends Migration
             $table->foreign('away_player_id')->references('id')->on('players');
             $table->integer('phase_id');
             $table->foreign('phase_id')->references('id')->on('phases');
-            $table->string('home_score');
-            $table->string('away_score');
+            $table->integer('home_score');
+            $table->integer('away_score');
             $table->timestamps();
             $table->softDeletes();
         });

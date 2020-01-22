@@ -43,15 +43,16 @@ class League extends Model
     public function generatePhases()
     {
         $totalPhases = $this->players->count() - 1;
+        $randomOrderPlayers = $this->players()->inRandomOrder()->get();
         $today = Carbon::now();
         for($i = 1; $i <= $totalPhases; ++$i) {
             /** @var Phase $phase */
             $phase = Phase::create([
                 'league_id' => $this->id,
                 'number' => $i,
-                'date' => $today->next(Carbon::MONDAY)->addWeeks($i - 1)
+                'date' => $today->next(Carbon::MONDAY)->addWeek()
             ]);
-            $phase->createMatches($this->players);
+            $phase->createMatches($randomOrderPlayers);
         }
     }
 
@@ -81,7 +82,7 @@ class League extends Model
         FROM players p
                  JOIN league_player lp ON p.id = lp.player_id
                  JOIN leagues l ON lp.league_id = l.id
-                 JOIN phases ph on l.id = ph.league_id
+                 LEFT JOIN phases ph on l.id = ph.league_id
         WHERE l.id = ?
         GROUP BY p.id, p.first_name, p.last_name
         ORDER BY wonMatches DESC, playedMatches DESC', [$this->id]);
@@ -94,9 +95,9 @@ class League extends Model
         $orderedPlayers = [];
         $previousPlayerWonMatches = 0;
         $toReorder = [];
+        $totalPlayers = count($players);
         foreach($players as $key => $player) {
             if($key == 0) {
-                $previousPlayerWonMatches = $player->wonMatches;
                 $toReorder[] = $player;
             } elseif($player->wonMatches == $previousPlayerWonMatches) {
                 $toReorder[] = $player;
@@ -107,12 +108,56 @@ class League extends Model
                     $orderedPlayers[] = $orderedPlayer;
                 }
             }
+            if($key == $totalPlayers - 1) {
+                $partiallyOrderedPlayers = $this->reorder($toReorder);
+                foreach($partiallyOrderedPlayers as $orderedPlayer) {
+                    $orderedPlayers[] = $orderedPlayer;
+                }
+            }
+            $previousPlayerWonMatches = $player->wonMatches;
         }
         return $orderedPlayers;
     }
 
     private function reorder(array $toReorder)
     {
+        return $toReorder;
+        if(count($toReorder) == 1){
+            return $toReorder;
+        }
+        $playerIds = [];
+        foreach($toReorder as $player) {
+            $playerIds[] = $player->id;
+        }
+        $matches = Match::where(function($query) use ($playerIds) {
+            $query->whereIn('home_player_id', $playerIds);
+            $query->whereIn('away_player_id', $playerIds);
+        })->get();
+
+
+        $keys = array_keys($toReorder);
+        $wonSets = [];
+        $wonMatches = [];
+        foreach($keys as $key) {
+            $wonSets[] = 0;
+            $wonMatches[] = 0;
+        }
+        foreach($toReorder as $key => $player) {
+            foreach($matches as $match) {
+                if($match->home_player_id == $player->id) {
+                    if($match->home_score == Match::WINNER_SCORE) {
+
+                    }
+                    $wonSets[$key] += $match->home_score;
+                } elseif($match->home_player_id == $player->id) {
+                    $wonSets[$key] += $match->away_score;
+                }
+            }
+        }
+
+        //dd($toReorder, $matches->toArray());
+
+
         return $toReorder;
     }
 }

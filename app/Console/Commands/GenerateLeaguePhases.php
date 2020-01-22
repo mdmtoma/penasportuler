@@ -40,7 +40,7 @@ class GenerateLeaguePhases extends Command
     {
         /** @var League $league */
         $league = League::find($this->argument('league'));
-        if(!$league->has('phases')) {
+        if($league->phases->count() == 0) {
             $league->generatePhases();
         }
     }
